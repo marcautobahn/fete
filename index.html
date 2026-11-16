@@ -103,6 +103,9 @@
   .send:active{transform:scale(.97)}
   .send.off{opacity:.45}
   .thanks{text-align:center; font-size:21px; line-height:1.45; color:var(--ink); font-weight:600; padding:8px 0 4px}
+  .recap{background:#eaf6ff; border-radius:16px; padding:12px 14px; text-align:center; font-size:18px; line-height:1.4; color:var(--ink); font-weight:600}
+  .cta{display:block; text-align:center; text-decoration:none; font-weight:800; font-size:18px; color:var(--ink); padding:12px; border-radius:16px; border:3px solid #d6ecfb; background:#fff}
+  .again{font:inherit; font-size:16px; color:var(--muted); background:none; border:0; text-decoration:underline; cursor:pointer; padding:4px}
   .hint{font-size:15px; color:var(--muted); text-align:center; min-height:1.2em}
   .hint.ok{color:var(--grass2); font-weight:700}
   .addr{color:var(--ink); font-size:19px; text-decoration:none; font-weight:700}
@@ -200,13 +203,30 @@ function refresh(){
   if(ok && (hint.textContent.startsWith('Remplis')||hint.textContent.startsWith('Choisis'))) hint.textContent='';
 }
 [fE,fP,fT,fA].forEach(i=>i.addEventListener('input',refresh));
-function thanks(statut){
-  const box=document.querySelector('.rsvp');
-  box.innerHTML = statut==='oui'
-    ? `<h2>Merci! 🎉</h2><p class="thanks">Ta réponse est confirmée.<br>On t’attend le <b>samedi 28 novembre à 11 h</b> avec l’équipe <b>${TEAMS[team]}</b>!</p>`
-    : `<h2>Merci! 💌</h2><p class="thanks">Merci de nous avoir avisés.</p>`;
-  box.scrollIntoView({behavior:'smooth',block:'center'});
-  if(statut==='oui') burst(60);
+const EVT={date:'20261128', start:'110000', end:'150000', title:'Fête de Sydney (9 ans)', place:'43 Gaulin, L’Assomption, QC', maps:'https://www.google.com/maps/search/?api=1&query=43%20Gaulin%2C%20L%E2%80%99Assomption%2C%20QC'};
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function icsHref(d){
+  const ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Fete Sydney//FR','BEGIN:VEVENT','UID:fete-sydney-'+EVT.date+'@marclavoie.com',
+    'DTSTAMP:20261116T120000Z','DTSTART:'+EVT.date+'T'+EVT.start,'DTEND:'+EVT.date+'T'+EVT.end,'SUMMARY:'+EVT.title,'LOCATION:'+EVT.place,
+    'DESCRIPTION:'+(d.equipe?'Équipe '+d.equipe+'. ':'')+'Parents bienvenus dès 14 h 30.','END:VEVENT','END:VCALENDAR'].join('\r\n');
+  return 'data:text/calendar;charset=utf-8,'+encodeURIComponent(ics);
+}
+function thanks(d, restored){
+  const box=document.querySelector('.rsvp'), kid=esc(d.enfant||'');
+  box.innerHTML = d.statut==='oui'
+    ? `<h2>Merci! 🎉</h2>
+       <p class="thanks">Ta réponse est confirmée${kid?' pour <b>'+kid+'</b>':''}.</p>
+       <div class="recap">Équipe <b>${esc(d.equipe)}</b><br>Samedi 28 novembre, 11 h – 15 h<br>43 Gaulin, L’Assomption</div>
+       <a class="cta" href="${icsHref(d)}" download="fete-sydney.ics">📅 Ajouter au calendrier</a>
+       <a class="cta" href="${EVT.maps}" target="_blank" rel="noopener">📍 Ouvrir dans Maps</a>
+       <p class="hint">Pour modifier ta réponse, écris-nous un message.</p>
+       <button type="button" class="again" id="again">Répondre pour un autre enfant</button>`
+    : `<h2>Merci! 💌</h2>
+       <p class="thanks">Merci de nous avoir avisés.${kid?'<br>'+kid+' va nous manquer!':''}</p>
+       <p class="hint">Pour modifier ta réponse, écris-nous un message.</p>
+       <button type="button" class="again" id="again">Répondre pour un autre enfant</button>`;
+  document.getElementById('again').onclick=()=>{ try{localStorage.removeItem('ctc-last')}catch(_){} location.reload(); };
+  if(!restored){ box.scrollIntoView({behavior:'smooth',block:'center'}); if(d.statut==='oui') burst(60); }
 }
 function onSend(statut){ return e=>{
   e.preventDefault();
@@ -215,9 +235,10 @@ function onSend(statut){ return e=>{
   const k='ctc-sent:'+statut+':'+fE.value.trim().toLowerCase()+'-'+fT.value.replace(/\D/g,'');
   let sent=false; try{sent=!!localStorage.getItem(k)}catch(_){}
   if(sent || document.body.dataset.busy){ hint.className='hint ok'; hint.textContent='Déjà envoyé ✓'; return; }
+  const d={statut, enfant:fE.value.trim(), equipe: statut==='oui'?(TEAMS[team]||''):''};
   document.body.dataset.busy='1'; hint.className='hint'; hint.textContent='Envoi en cours…';
   fetch(link(statut),{mode:'no-cors'})
-    .then(()=>{ try{localStorage.setItem(k,'1')}catch(_){} thanks(statut); })
+    .then(()=>{ try{localStorage.setItem(k,'1'); localStorage.setItem('ctc-last',JSON.stringify(d))}catch(_){} thanks(d); })
     .catch(()=>{ hint.className='hint'; hint.textContent='Oups, l’envoi a échoué. Réessaie dans un instant.'; })
     .finally(()=>{ delete document.body.dataset.busy; });
 };}
@@ -241,6 +262,7 @@ document.querySelectorAll('.team').forEach(b=>b.addEventListener('click',()=>{
 }));
 
 if(team) setTeam(team);
+try{ const last=JSON.parse(localStorage.getItem('ctc-last')||'null'); if(last&&last.statut) thanks(last,true); }catch(_){}
 
 function burst(n){
   if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
