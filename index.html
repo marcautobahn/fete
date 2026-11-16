@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Choisis ton camp</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Luckiest+Guy&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sky1:#1e88e5; --sky2:#8fd3ff; --grass:#5cc531; --grass2:#2f9e2a; --brick:#c8642d; --gold:#ffc928;
+    --red:#e8262f; --card:rgba(255,255,255,.95); --ink:#16324f; --muted:#4a6a8a;
+    --accent: linear-gradient(135deg,#ffc928,#ff9a1f);
+  }
+  body.team-a{ --accent: linear-gradient(135deg,#e8262f,#ff6a3d); }
+  body.team-b{ --accent: linear-gradient(135deg,#ffc928,#ffe25a); }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{height:100%; background:#c9ecff}
+  main > *{flex:none}
+  body{
+    font-family:'Baloo 2',system-ui,sans-serif; color:var(--ink); min-height:100%;
+    background:
+      radial-gradient(160px 70px at 12% 9%, rgba(255,255,255,.95) 60%, transparent 62%),
+      radial-gradient(120px 55px at 22% 7%, rgba(255,255,255,.95) 60%, transparent 62%),
+      radial-gradient(170px 70px at 85% 18%, rgba(255,255,255,.9) 60%, transparent 62%),
+      radial-gradient(110px 50px at 75% 16%, rgba(255,255,255,.9) 60%, transparent 62%),
+      linear-gradient(180deg, var(--sky1) 0%, var(--sky2) 70%, #c9ecff 100%);
+    display:flex; justify-content:center; padding:24px 16px 120px; overflow-x:hidden; position:relative;
+  }
+  body::after{content:""; position:absolute; left:0; right:0; bottom:0; height:90px; z-index:0; pointer-events:none;
+    background:
+      radial-gradient(40px 26px at 10% 0, var(--grass) 98%, transparent) repeat-x 0 0/80px 30px,
+      linear-gradient(180deg, var(--grass) 0 30px, var(--grass2) 30px 40px, #d98a3d 40px 52px, var(--brick) 52px);}
+  main{width:100%; max-width:520px; display:flex; flex-direction:column; gap:18px; position:relative; z-index:1}
+  .cover{
+    border-radius:28px; padding:28px 22px 22px; text-align:center; position:relative; overflow:hidden;
+    background: var(--card); box-shadow:0 14px 34px rgba(10,60,120,.28); border:4px solid #fff;
+  }
+  .cover::before{content:""; position:absolute; inset:0; background:var(--accent); opacity:.18; transition:background .4s}
+  .vs{display:flex; align-items:center; justify-content:center; gap:14px; position:relative}
+  .orb{width:84px;height:84px;border-radius:50%; display:grid; place-items:center; font-size:38px; font-weight:800; color:#fff;
+       box-shadow: inset 0 -8px 0 rgba(0,0,0,.18), 0 8px 18px rgba(10,60,120,.3)}
+  .orb.a{background:var(--red)} .orb.b{background:var(--gold); color:#7a4a00}
+  .vs span{font-size:30px;font-weight:800;color:var(--brick)}
+  body.playing .orb.a{animation:bob .9s ease-in-out infinite}
+  body.playing .orb.b{animation:bob .9s ease-in-out infinite .45s}
+  @keyframes bob{50%{transform:translateY(-8px) scale(1.05)}}
+  h1{font-size:44px; line-height:1; margin-top:18px; position:relative; font-weight:800; letter-spacing:-.5px; color:var(--ink)}
+  .sub{color:var(--ink); position:relative; font-size:clamp(24px,7vw,32px); font-weight:800; line-height:1.2; margin-top:12px}
+
+  .player{background:var(--card); border:4px solid #fff; border-radius:24px; padding:18px; display:flex; align-items:center; gap:16px;
+          box-shadow:0 10px 26px rgba(10,60,120,.22)}
+  .play{flex:none; width:76px; height:76px; border-radius:50%; border:0; cursor:pointer;
+        background:var(--accent); display:grid; place-items:center; box-shadow:inset 0 -6px 0 rgba(0,0,0,.15), 0 8px 18px rgba(10,60,120,.3);
+        transition:transform .15s}
+  .play:active{transform:scale(.94)}
+  .play svg{width:32px;height:32px;fill:#fff}
+  .track{flex:1; min-width:0}
+  .bar{height:14px; border-radius:99px; background:#d6ecfb; cursor:pointer; position:relative; touch-action:none}
+  .fill{height:100%; width:0; border-radius:99px; background:linear-gradient(90deg,var(--grass2),var(--grass))}
+  .times{display:flex; justify-content:space-between; color:var(--muted); font-size:15px; margin-top:6px}
+
+  .teams{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+  .team{border:4px solid #fff; border-radius:20px; padding:14px 10px; font:inherit; font-size:20px; font-weight:800;
+        cursor:pointer; transition:transform .15s, box-shadow .2s; box-shadow:inset 0 -6px 0 rgba(0,0,0,.15), 0 8px 18px rgba(10,60,120,.25)}
+  .team:active{transform:scale(.96)}
+  .team.a{background:var(--red); color:#fff} .team.b{background:var(--gold); color:#5a3600}
+  .team.on{box-shadow:0 0 0 5px var(--grass), inset 0 -6px 0 rgba(0,0,0,.15)}
+  .label{color:#fff; text-align:center; font-size:18px; font-weight:800; margin-bottom:-8px; text-shadow:0 2px 6px rgba(10,60,120,.4)}
+
+  .lyrics{background:var(--card); border:4px solid #fff; border-radius:24px; padding:20px 18px; display:flex; flex-direction:column; gap:6px;
+          box-shadow:0 10px 26px rgba(10,60,120,.22)}
+  .sec{color:var(--brick); font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:1.5px; margin-top:10px}
+  .sec:first-child{margin-top:0}
+  .line{font-size:21px; line-height:1.3; opacity:.45; transition:opacity .25s, transform .25s; transform-origin:left; cursor:pointer}
+  .line.now{opacity:1; transform:scale(1.04); color:var(--grass2)}
+  .line.done{opacity:.75}
+  footer{color:var(--muted); text-align:center; font-size:14px}
+
+
+  .fun{font-family:'Luckiest Guy','Baloo 2',sans-serif; font-weight:400; letter-spacing:1px}
+  h1.fun{font-size:50px; line-height:1.05; color:#fff; padding-top:6px;
+    -webkit-text-stroke:2px var(--ink); paint-order:stroke fill;
+    text-shadow:0 5px 0 var(--ink), 0 8px 14px rgba(10,60,120,.35)}
+  h1.fun .r{color:var(--red)} h1.fun .g{color:var(--grass)} h1.fun .y{color:var(--gold)} h1.fun .b{color:var(--sky1)}
+  .details{background:var(--card); border:4px solid #fff; border-radius:24px; padding:20px 18px; text-align:center;
+           box-shadow:0 10px 26px rgba(10,60,120,.22); display:grid; gap:12px}
+  .details .k{color:var(--brick); font-size:15px; font-weight:800; text-transform:uppercase; letter-spacing:1.5px}
+  .row{display:grid; grid-template-columns:1fr 1.45fr; gap:10px}
+  .pill{background:#eaf6ff; border-radius:18px; padding:14px 8px}
+  .pill .big{font-family:'Luckiest Guy',sans-serif; font-size:clamp(18px,5.6vw,24px); line-height:1.1; color:var(--ink); letter-spacing:.5px; margin-top:4px; white-space:nowrap}
+  .pill .small{color:var(--muted); font-size:16px}
+
+  .rsvp{background:var(--card); border:4px solid #fff; border-radius:24px; padding:20px 18px; box-shadow:0 10px 26px rgba(10,60,120,.22); display:grid; gap:12px}
+  .rsvp h2{font-family:'Luckiest Guy',sans-serif; font-weight:400; letter-spacing:1px; font-size:28px; text-align:center; color:var(--ink)}
+  .rsvp label{display:grid; gap:4px; font-size:16px; color:var(--muted); font-weight:600}
+  .rsvp input{font:inherit; font-size:19px; padding:12px 14px; border-radius:14px; border:3px solid #d6ecfb; background:#f6fbff; color:var(--ink); outline:none; width:100%}
+  .rsvp input:focus{border-color:var(--sky1)}
+  .send{display:block; text-align:center; text-decoration:none; font-family:'Luckiest Guy',sans-serif; letter-spacing:1px; font-size:24px;
+        padding:14px; border-radius:18px; color:#fff; background:linear-gradient(135deg,var(--grass),var(--grass2));
+        box-shadow:inset 0 -6px 0 rgba(0,0,0,.15), 0 8px 18px rgba(10,60,120,.25); transition:opacity .2s, transform .15s}
+  .send:active{transform:scale(.97)}
+  .send.off{opacity:.45}
+  .hint{font-size:15px; color:var(--muted); text-align:center; min-height:1.2em}
+  .hint.ok{color:var(--grass2); font-weight:700}
+  .addr{color:var(--ink); font-size:19px; text-decoration:none; font-weight:700}
+  .addr small{display:block; color:var(--sky1); font-size:15px; font-weight:600}
+  .pick{text-align:center; font-size:16px; color:var(--muted)}
+  .pick b{color:var(--ink)}
+
+  .no{display:block; text-align:center; text-decoration:none; font-weight:700; font-size:17px; color:var(--muted);
+      padding:10px; border-radius:14px; border:3px solid #d6ecfb; background:#fff}
+  .no.off{opacity:.45}
+  .deadline{text-align:center; font-size:16px; color:var(--brick); font-weight:700; margin-top:-6px}
+  .sched{background:var(--card); border:4px solid #fff; border-radius:24px; padding:20px 18px; box-shadow:0 10px 26px rgba(10,60,120,.22); display:grid; gap:10px}
+  .sched h2{font-family:'Luckiest Guy',sans-serif; font-weight:400; letter-spacing:1px; font-size:26px; text-align:center; color:var(--ink)}
+  .step{display:grid; grid-template-columns:78px 1fr; gap:12px; align-items:center; background:#eaf6ff; border-radius:16px; padding:10px 12px}
+  .step b{font-family:'Luckiest Guy',sans-serif; font-weight:400; font-size:20px; color:var(--brick); letter-spacing:1px}
+  .step span{font-size:18px; color:var(--ink); line-height:1.25}
+  .team.pop{animation:pop .45s ease}
+  @keyframes pop{0%{transform:scale(1)}35%{transform:scale(1.12) rotate(-3deg)}65%{transform:scale(.96) rotate(2deg)}100%{transform:scale(1)}}
+  .orb.jump{animation:jump .6s ease}
+  @keyframes jump{40%{transform:translateY(-18px) scale(1.15)}}
+  .parents{background:#fff4d6; border-radius:16px; padding:12px 14px; font-size:17px; line-height:1.35; color:var(--ink); text-align:center; font-weight:600}
+  .tlabel{font-size:16px; color:var(--muted); font-weight:600; margin-bottom:-6px}
+  .rsvp .team{font-size:18px; padding:12px 8px}
+  .confetti{position:fixed; top:-20px; width:10px; height:16px; border-radius:3px; z-index:2; pointer-events:none;
+            animation:fall linear forwards}
+  @keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+  @media (prefers-reduced-motion:reduce){ body.playing .orb{animation:none} .confetti{display:none} }
+</style>
+</head>
+<body>
+<main>
+  <section class="cover">
+    <div class="vs"><div class="orb a">★</div><span>vs</span><div class="orb b">⚡</div></div>
+    <h1 class="fun"><span class="r">C</span><span class="g">h</span><span class="y">o</span><span class="b">i</span><span class="r">s</span><span class="g">i</span><span class="y">s</span> <span class="b">t</span><span class="r">o</span><span class="g">n</span> <span class="y">c</span><span class="b">a</span><span class="r">m</span><span class="g">p</span><span class="y">!</span></h1>
+    <p class="sub">Sydney a 9 ans! Tu es invité(e) à sa fête 🎉</p>
+  </section>
+
+  <section class="details">
+    <div class="k">La fête</div>
+    <div class="row">
+      <div class="pill"><div class="small">Samedi</div><div class="big">28 nov.</div></div>
+      <div class="pill"><div class="small">Heure</div><div class="big">11 h – 15 h</div></div>
+    </div>
+    <a class="addr" href="https://www.google.com/maps/search/?api=1&query=43%20Gaulin%2C%20L%E2%80%99Assomption%2C%20QC" target="_blank" rel="noopener">43 Gaulin, L’Assomption<small>Ouvrir dans Maps</small></a>
+  </section>
+
+  <section class="sched">
+    <h2>Le programme</h2>
+    <div class="step"><b>11 h</b><span>Arrivée des amis</span></div>
+    <p class="parents">👨‍👩‍👧 Parents, vous êtes les bienvenus dès 14 h 30 pour un verre/bière!</p>
+  </section>
+
+
+  <section class="rsvp">
+    <h2>Je serai là!</h2>
+    <p class="deadline">Réponds avant le 20 novembre</p>
+    <label>Prénom de l’enfant<input id="f-enfant" autocomplete="off" maxlength="40"></label>
+    <label>Nom du parent<input id="f-parent" autocomplete="name" maxlength="60"></label>
+    <label>Téléphone<input id="f-tel" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="514 555-1234"></label>
+    <label>Allergies ou restrictions (optionnel)<input id="f-all" maxlength="120" placeholder="Ex.: arachides, lactose"></label>
+    <div class="tlabel">Ton équipe</div>
+    <div class="teams">
+      <button type="button" class="team a" data-t="a">Équipe Mario</button>
+      <button type="button" class="team b" data-t="b">Équipe Pokémon</button>
+    </div>
+    <a class="send off" id="send" href="#" target="_blank" rel="noopener">Confirmer</a>
+    <a class="no off" id="no" href="#" target="_blank" rel="noopener">Je ne peux pas venir</a>
+    <p class="hint" id="hint"></p>
+  </section>
+
+</main>
+
+
+<script>
+const $ = id => document.getElementById(id);
+// teams
+let team=null; try{team=localStorage.getItem('ctc-team')}catch(e){}
+function setTeam(t){ team=t; document.body.classList.remove('team-a','team-b'); if(t) document.body.classList.add('team-'+t);
+  document.querySelectorAll('.team').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  try{localStorage.setItem('ctc-team',t)}catch(e){}
+  if(typeof refresh==='function') refresh(); }
+document.querySelectorAll('.team').forEach(b=>b.onclick=()=>{ setTeam(b.dataset.t); burst(24); });
+
+
+// RSVP: link opens the Make webhook outside the page (fetch to other hosts is blocked)
+const TEAMS={a:'Mario', b:'Pokémon'};
+const HOOK='https://hook.us1.make.com/vpusjofaynro02h4dj46fkhph2vncca8';
+const fE=$('f-enfant'), fP=$('f-parent'), fT=$('f-tel'), fA=$('f-all'), send=$('send'), no=$('no'), hint=$('hint');
+function validBase(){ return fE.value.trim().length>0 && fP.value.trim().length>0 && fT.value.replace(/\D/g,'').length>=10; }
+function valid(statut){ return validBase() && (statut==='non' || !!TEAMS[team]); }
+function link(statut){ return HOOK+'?'+new URLSearchParams({statut, enfant:fE.value.trim(), parent:fP.value.trim(), tel:fT.value.trim(), equipe: statut==='oui'?(TEAMS[team]||''):'', allergies: statut==='oui'?fA.value.trim():''}).toString(); }
+function refresh(){
+  const ok=valid('oui'), okN=valid('non'); send.classList.toggle('off',!ok); no.classList.toggle('off',!okN);
+  send.href = ok ? link('oui') : '#'; no.href = okN ? link('non') : '#';
+  if(ok && (hint.textContent.startsWith('Remplis')||hint.textContent.startsWith('Choisis'))) hint.textContent='';
+}
+[fE,fP,fT,fA].forEach(i=>i.addEventListener('input',refresh));
+function onSend(statut){ return e=>{
+  if(!validBase()){ e.preventDefault(); hint.className='hint'; hint.textContent='Remplis le prénom, le parent et le téléphone (10 chiffres).'; return; }
+  if(!valid(statut)){ e.preventDefault(); hint.className='hint'; hint.textContent='Choisis ton équipe: Mario ou Pokémon!'; return; }
+  const k='ctc-sent:'+statut+':'+fE.value.trim().toLowerCase()+'-'+fT.value.replace(/\D/g,'');
+  let sent=false; try{sent=!!localStorage.getItem(k)}catch(_){}
+  if(sent || document.body.dataset.busy){ e.preventDefault(); hint.className='hint ok'; hint.textContent='Déjà envoyé ✓'; return; }
+  document.body.dataset.busy='1'; setTimeout(()=>{ delete document.body.dataset.busy; },5000);
+  try{localStorage.setItem(k,'1')}catch(_){}
+  setTimeout(()=>{ hint.className='hint ok';
+    if(statut==='oui'){ hint.textContent='Merci! Ta réponse est envoyée 🎉'; burst(50); }
+    else { hint.textContent='Merci de nous avoir avisés 💌'; } },300);
+};}
+send.addEventListener('click',onSend('oui'));
+no.addEventListener('click',onSend('non'));
+
+// Team tap: little synth jingle + bounce
+let actx=null;
+function jingle(t){
+  try{ actx=actx||new (window.AudioContext||window.webkitAudioContext)(); if(actx.state==='suspended') actx.resume();
+    const notes = t==='a' ? [523.25,659.25,783.99,1046.5] : [659.25,880,987.77,1318.5];
+    notes.forEach((f,i)=>{ const o=actx.createOscillator(), g=actx.createGain(); const s=actx.currentTime+i*0.08;
+      o.type='square'; o.frequency.value=f; g.gain.setValueAtTime(0.0001,s); g.gain.exponentialRampToValueAtTime(0.12,s+0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001,s+0.14); o.connect(g).connect(actx.destination); o.start(s); o.stop(s+0.16); });
+  }catch(_){}
+}
+document.querySelectorAll('.team').forEach(b=>b.addEventListener('click',()=>{
+  jingle(b.dataset.t);
+  b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop');
+  const orb=document.querySelector('.orb.'+b.dataset.t); if(orb){ orb.classList.remove('jump'); void orb.offsetWidth; orb.classList.add('jump'); }
+}));
+
+if(team) setTeam(team);
+
+function burst(n){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const cols = team==='a'?['#e8262f','#ff6a3d','#fff']: team==='b'?['#ffc928','#ffe25a','#5cc531']:['#e8262f','#ffc928','#5cc531','#1e88e5','#fff'];
+  for(let i=0;i<n;i++){ const c=document.createElement('div'); c.className='confetti';
+    c.style.left=Math.random()*100+'vw'; c.style.background=cols[i%cols.length];
+    c.style.animationDuration=(1.8+Math.random()*1.6)+'s'; c.style.animationDelay=(Math.random()*.4)+'s';
+    document.body.appendChild(c); setTimeout(()=>c.remove(),4200); }
+}
+</script>
+</body>
+</html>
