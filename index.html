@@ -102,6 +102,7 @@
         box-shadow:inset 0 -6px 0 rgba(0,0,0,.15), 0 8px 18px rgba(10,60,120,.25); transition:opacity .2s, transform .15s}
   .send:active{transform:scale(.97)}
   .send.off{opacity:.45}
+  .thanks{text-align:center; font-size:21px; line-height:1.45; color:var(--ink); font-weight:600; padding:8px 0 4px}
   .hint{font-size:15px; color:var(--muted); text-align:center; min-height:1.2em}
   .hint.ok{color:var(--grass2); font-weight:700}
   .addr{color:var(--ink); font-size:19px; text-decoration:none; font-weight:700}
@@ -199,17 +200,26 @@ function refresh(){
   if(ok && (hint.textContent.startsWith('Remplis')||hint.textContent.startsWith('Choisis'))) hint.textContent='';
 }
 [fE,fP,fT,fA].forEach(i=>i.addEventListener('input',refresh));
+function thanks(statut){
+  const box=document.querySelector('.rsvp');
+  box.innerHTML = statut==='oui'
+    ? `<h2>Merci! 🎉</h2><p class="thanks">Ta réponse est confirmée.<br>On t’attend le <b>samedi 28 novembre à 11 h</b> avec l’équipe <b>${TEAMS[team]}</b>!</p>`
+    : `<h2>Merci! 💌</h2><p class="thanks">Merci de nous avoir avisés.</p>`;
+  box.scrollIntoView({behavior:'smooth',block:'center'});
+  if(statut==='oui') burst(60);
+}
 function onSend(statut){ return e=>{
-  if(!validBase()){ e.preventDefault(); hint.className='hint'; hint.textContent='Remplis le prénom, le parent et le téléphone (10 chiffres).'; return; }
-  if(!valid(statut)){ e.preventDefault(); hint.className='hint'; hint.textContent='Choisis ton équipe: Mario ou Pokémon!'; return; }
+  e.preventDefault();
+  if(!validBase()){ hint.className='hint'; hint.textContent='Remplis le prénom, le parent et le téléphone (10 chiffres).'; return; }
+  if(!valid(statut)){ hint.className='hint'; hint.textContent='Choisis ton équipe: Mario ou Pokémon!'; return; }
   const k='ctc-sent:'+statut+':'+fE.value.trim().toLowerCase()+'-'+fT.value.replace(/\D/g,'');
   let sent=false; try{sent=!!localStorage.getItem(k)}catch(_){}
-  if(sent || document.body.dataset.busy){ e.preventDefault(); hint.className='hint ok'; hint.textContent='Déjà envoyé ✓'; return; }
-  document.body.dataset.busy='1'; setTimeout(()=>{ delete document.body.dataset.busy; },5000);
-  try{localStorage.setItem(k,'1')}catch(_){}
-  setTimeout(()=>{ hint.className='hint ok';
-    if(statut==='oui'){ hint.textContent='Merci! Ta réponse est envoyée 🎉'; burst(50); }
-    else { hint.textContent='Merci de nous avoir avisés 💌'; } },300);
+  if(sent || document.body.dataset.busy){ hint.className='hint ok'; hint.textContent='Déjà envoyé ✓'; return; }
+  document.body.dataset.busy='1'; hint.className='hint'; hint.textContent='Envoi en cours…';
+  fetch(link(statut),{mode:'no-cors'})
+    .then(()=>{ try{localStorage.setItem(k,'1')}catch(_){} thanks(statut); })
+    .catch(()=>{ hint.className='hint'; hint.textContent='Oups, l’envoi a échoué. Réessaie dans un instant.'; })
+    .finally(()=>{ delete document.body.dataset.busy; });
 };}
 send.addEventListener('click',onSend('oui'));
 no.addEventListener('click',onSend('non'));
